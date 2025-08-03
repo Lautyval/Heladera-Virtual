@@ -37,3 +37,22 @@ def ver_heladera():
     for prod in productos:
         mensaje += f"- {prod['nombre']} x{prod['cantidad']}\n"
     return mensaje.strip()
+
+def modificar_producto(nombre_actual, nuevo_nombre=None, nueva_cantidad=None):
+    productos = cargar_heladera()
+    actualizado = False
+
+    for producto in productos:
+        if producto["nombre"].lower() == nombre_actual.lower():
+            if nuevo_nombre:
+                producto["nombre"] = nuevo_nombre.lower()
+            if nueva_cantidad is not None:
+                producto["cantidad"] = nueva_cantidad
+            actualizado = True
+            break
+
+    if actualizado:
+        guardar_heladera(productos)
+        return "✅ Producto modificado correctamente."
+    else:
+        return "❌ Producto no encontrado en tu heladera."
