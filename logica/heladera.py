@@ -27,3 +27,13 @@ def agregar_producto(nombre, cantidad):
     productos.append({"nombre": nombre, "cantidad": cantidad})
     guardar_heladera(productos)
     return f"✅ Producto agregado: {nombre} x{cantidad}"
+
+def ver_heladera():
+    productos = cargar_heladera()
+    if not productos:
+        return "🧊 Tu heladera está vacía."
+
+    mensaje = "🥶 Tu heladera contiene:\n"
+    for prod in productos:
+        mensaje += f"- {prod['nombre']} x{prod['cantidad']}\n"
+    return mensaje.strip()
