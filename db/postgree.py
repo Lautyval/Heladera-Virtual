@@ -60,6 +60,13 @@ def obtener_todos_los_usuarios():
     return cursor.fetchall()
 
 
+
+def existe_usuario(telegram_id):
+    cursor.execute("SELECT id FROM usuarios WHERE telegram_id = ?;", (telegram_id,))
+    return cursor.fetchone() is not None
+
+
+
 def actualizar_usuario(usuario_id, nuevo_telegram_id):
     try:
         cursor.execute("UPDATE usuarios SET telegram_id = ? WHERE id = ?;", (nuevo_telegram_id, usuario_id))
