@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
+from db.postgree import crear_tablas
 from comandos.start import start
 
 from comandos.agregar import agregar
@@ -17,6 +17,7 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 
 if __name__ == "__main__":
+    crear_tablas()
     app = ApplicationBuilder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("start", start))

@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from db.postgree import agregar_producto, obtener_heladera_id  # Ajustá la ruta según tu estructura
+from db.postgree import agregar_producto, existe_usuario
+
 
 async def agregar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
@@ -16,12 +17,14 @@ async def agregar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     telegram_id = str(update.effective_user.id)
-    heladera_id = obtener_heladera_id(telegram_id)
 
-    if heladera_id is None:
-        await update.message.reply_text("❌ No se encontró tu heladera. Por favor inicia con /start.")
+    if not existe_usuario(telegram_id):
+        await update.message.reply_text(
+            "❌ No se encontró tu heladera. Por favor inicia con /start."
+        )
         return
 
-    agregar_producto(heladera_id, nombre.capitalize(), cantidad)
-    await update.message.reply_text(f"✅ Se agregó {cantidad} de {nombre.capitalize()} a tu heladera.")
-
+    agregar_producto(telegram_id, nombre.capitalize(), cantidad)
+    await update.message.reply_text(
+        f"✅ Se agregó {cantidad} de {nombre.capitalize()} a tu heladera."
+    )
