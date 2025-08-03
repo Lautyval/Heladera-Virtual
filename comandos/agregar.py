@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from core.heladera import agregar_producto
+from logica.heladera import agregar_producto
 
 async def agregar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
@@ -15,5 +15,5 @@ async def agregar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ La cantidad debe ser un número.")
         return
 
-    mensaje = agregar_producto(nombre, cantidad)
+    mensaje = agregar_producto(nombre.capitalize(), cantidad)
     await update.message.reply_text(mensaje)

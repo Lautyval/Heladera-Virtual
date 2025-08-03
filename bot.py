@@ -5,6 +5,9 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 from comandos.agregar import agregar
 
+from comandos.ver_heladera import ver
+
+
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 
@@ -16,6 +19,8 @@ if __name__ == "__main__":
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("agregar", agregar))
+    app.add_handler(CommandHandler("ver_heladera", ver))
+
 
     print("✅ Bot funcionando...")
     app.run_polling()
