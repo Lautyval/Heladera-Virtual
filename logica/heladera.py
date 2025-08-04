@@ -1,58 +1,38 @@
-import json
-import os
+from db.postgree import (
+    buscar_producto,
+    actualizar_producto_nombre,
+    actualizar_producto_cantidad,
+    obtener_productos,
+)
 
-RUTA_ARCHIVO = os.path.join("db", "heladera.json")
-
-def cargar_heladera():
-    if not os.path.exists(RUTA_ARCHIVO):
-        return []
-    with open(RUTA_ARCHIVO, "r") as f:
-        return json.load(f)
-
-def guardar_heladera(productos):
-    with open(RUTA_ARCHIVO, "w") as f:
-        json.dump(productos, f, indent=4)
-
-def agregar_producto(nombre, cantidad):
-    productos = cargar_heladera()
-
-    # Buscar si ya existe
-    for prod in productos:
-        if prod["nombre"] == nombre:
-            prod["cantidad"] += cantidad
-            guardar_heladera(productos)
-            return f"🔄 Se actualizó {nombre} a {prod['cantidad']} unidades."
-
-    # Si no existe, agregar nuevo
-    productos.append({"nombre": nombre, "cantidad": cantidad})
-    guardar_heladera(productos)
-    return f"✅ Producto agregado: {nombre} x{cantidad}"
-
-def ver_heladera():
-    productos = cargar_heladera()
+def ver_heladera(telegram_id):
+    productos = obtener_productos(telegram_id)
     if not productos:
         return "🧊 Tu heladera está vacía."
 
     mensaje = "🥶 Tu heladera contiene:\n"
     for prod in productos:
-        mensaje += f"- {prod['nombre']} x{prod['cantidad']}\n"
+        mensaje += (
+            f"- {prod[1].capitalize()} x{prod[2]}\n"  # prod[1]=nombre, prod[2]=cantidad
+        )
     return mensaje.strip()
 
-def modificar_producto(nombre_actual, nuevo_nombre=None, nueva_cantidad=None):
-    productos = cargar_heladera()
-    actualizado = False
 
-    for producto in productos:
-        if producto["nombre"].lower() == nombre_actual.lower():
-            if nuevo_nombre:
-                producto["nombre"] = nuevo_nombre.lower()
-            if nueva_cantidad is not None:
-                producto["cantidad"] = nueva_cantidad
-            actualizado = True
-            break
+def modificar_nombre_producto(telegram_id, nombre_actual, nuevo_nombre):
+    nombre_actual = nombre_actual.strip().lower()
+    nuevo_nombre = nuevo_nombre.strip().lower()
 
-    if actualizado:
-        guardar_heladera(productos)
-        return "✅ Producto modificado correctamente."
-    else:
-        return "❌ Producto no encontrado en tu heladera."
+    producto = buscar_producto(telegram_id, nombre_actual)
+    if not producto:
+        return "❌ No se encontró el producto en tu heladera."
+
+    actualizar_producto_nombre(telegram_id, nombre_actual, nuevo_nombre)
+    return f"✅ Producto renombrado a: {nuevo_nombre.capitalize()}"
+
+
+def modificar_cantidad_producto(telegram_id, nombre_actual, nueva_cantidad):
+    producto = buscar_producto(telegram_id, nombre_actual.lower())
+    if not producto:
+        return "❌ No se encontró el producto en tu heladera."
+    actualizar_producto_cantidad(telegram_id, nombre_actual.lower(), nueva_cantidad)
+    return f"✅ Cantidad actualizada a: {nueva_cantidad}"
