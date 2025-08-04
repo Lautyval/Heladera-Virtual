@@ -9,7 +9,7 @@ async def agregar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Uso: /agregar nombre cantidad")
         return
 
-    nombre = args[0]
+    nombre = args[0].lower()
     try:
         cantidad = int(args[1])
     except ValueError:
@@ -24,7 +24,7 @@ async def agregar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    agregar_producto(telegram_id, nombre.capitalize(), cantidad)
+    agregar_producto(telegram_id, nombre, cantidad)
     await update.message.reply_text(
         f"✅ Se agregó {cantidad} de {nombre.capitalize()} a tu heladera."
     )

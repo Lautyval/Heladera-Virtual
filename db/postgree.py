@@ -39,6 +39,8 @@ def crear_tablas():
 
 # ---------- CRUD USUARIOS ----------
 def crear_usuario(telegram_id, nombre):
+    telegram_id = str(telegram_id).strip()  # Consistencia
+    nombre = nombre.strip() if nombre else ""
     print(f"Creando usuario: {telegram_id} - {nombre}")
     cursor.execute(
         "INSERT OR IGNORE INTO usuarios (telegram_id, nombre) VALUES (?, ?);",
@@ -95,6 +97,8 @@ def eliminar_usuario(telegram_id):
 
 # ---------- CRUD PRODUCTOS ----------
 def agregar_producto(telegram_id, nombre, cantidad):
+    telegram_id = str(telegram_id).strip()  # Consistencia
+    nombre = nombre.strip()  # Limpiar espacios
     cursor.execute(
         """
     INSERT INTO productos (telegram_id, nombre, cantidad)
@@ -106,15 +110,41 @@ def agregar_producto(telegram_id, nombre, cantidad):
 
 
 def obtener_productos(telegram_id):
+    telegram_id = str(telegram_id).strip()
+    
+    # Verificación de conexión para SQLite Cloud (necesario para conexiones remotas)
+    try:
+        cursor.execute("SELECT 1")  # Ping simple a la conexión
+        cursor.fetchone()
+    except Exception as e:
+        print(f"[WARNING] Problema de conexión detectado: {e}")
+        return []
+    
+    # Consulta principal
+    try:
+        cursor.execute(
+            "SELECT id, nombre, cantidad FROM productos WHERE telegram_id = ?",
+            (telegram_id,)
+        )
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"[ERROR] Error en consulta obtener_productos: {e}")
+        return []
+
+
+def buscar_producto(telegram_id, nombre_producto):
+    telegram_id = str(telegram_id).strip()
+    nombre_producto = nombre_producto.strip().lower()
     cursor.execute(
         """
-    SELECT id, nombre, cantidad
-    FROM productos
-    WHERE telegram_id = ?;
-    """,
-        (telegram_id,),
+        SELECT nombre
+        FROM productos
+        WHERE telegram_id = ? AND TRIM(LOWER(nombre)) = ?
+        """,
+        (telegram_id, nombre_producto),
     )
-    return cursor.fetchall()
+    resultado = cursor.fetchone()
+    return resultado
 
 
 def actualizar_producto(producto_id, nueva_cantidad):
@@ -134,8 +164,33 @@ def eliminar_producto(producto_id):
     conn.commit()
 
 
+def actualizar_producto_nombre(telegram_id, nombre_actual, nuevo_nombre):
+    telegram_id = str(telegram_id).strip()
+    nombre_actual = nombre_actual.strip().lower()
+    nuevo_nombre = nuevo_nombre.strip()
+    cursor.execute(
+        """
+        UPDATE productos
+        SET nombre = ?
+        WHERE telegram_id = ? AND LOWER(nombre) = LOWER(?);
+        """,
+        (nuevo_nombre, telegram_id, nombre_actual),
+    )
+    conn.commit()
+
+def actualizar_producto_cantidad(telegram_id, nombre_actual, nueva_cantidad):
+    cursor.execute(
+        """
+        UPDATE productos
+        SET cantidad = ?
+        WHERE telegram_id = ? AND nombre = ?;
+        """,
+        (nueva_cantidad, telegram_id, nombre_actual),
+    )
+    conn.commit()
+
+
 # ---------- FUNCIONES AUXILIARES ----------
-# Ya no necesitas obtener_heladera_id, puedes eliminarla.
 
 
 # ---------- CIERRE ----------
