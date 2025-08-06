@@ -159,8 +159,26 @@ def actualizar_producto(producto_id, nueva_cantidad):
     conn.commit()
 
 
-def eliminar_producto(producto_id):
-    cursor.execute("DELETE FROM productos WHERE id = ?;", (producto_id,))
+def eliminar_producto(telegram_id, nombre):
+    telegram_id = str(telegram_id).strip()
+    nombre = nombre.strip().lower()
+
+    cursor.execute(
+        """
+        DELETE FROM productos
+        WHERE telegram_id = ? AND LOWER(nombre) = ?
+        """,
+        (telegram_id, nombre)
+    )
+    conn.commit()
+    
+def vaciar_heladera(telegram_id):
+    telegram_id = str(telegram_id).strip()
+
+    cursor.execute(
+        "DELETE FROM productos WHERE telegram_id = ?;",
+        (telegram_id,)
+    )
     conn.commit()
 
 
@@ -189,6 +207,19 @@ def actualizar_producto_cantidad(telegram_id, nombre_actual, nueva_cantidad):
     )
     conn.commit()
 
+def producto_existe(telegram_id, nombre):
+    telegram_id = str(telegram_id).strip()
+    nombre = nombre.strip().lower()
+    
+    cursor.execute(
+        """
+        SELECT 1 FROM productos
+        WHERE telegram_id = ? AND LOWER(nombre) = ?
+        """,
+        (telegram_id, nombre)
+    )
+    
+    return cursor.fetchone() is not None
 
 # ---------- FUNCIONES AUXILIARES ----------
 
