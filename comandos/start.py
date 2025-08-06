@@ -14,7 +14,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/modificar_nombre - Modificar el nombre de un producto\n"
         "/modificar_cantidad - Modificar la cantidad de un producto\n"
         "/eliminar - Eliminar un producto de tu heladera\n"
-        "/bajo_stock - Muestra productos con 2 a 0 unidades"
+        "/bajo_stock - Muestra productos con 2 a 0 unidades\n"
         "/vaciar_heladera - Vacia toda tu heladera\n"
     )
 
