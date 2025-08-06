@@ -1,6 +1,7 @@
 import sqlitecloud
 import os
 from dotenv import load_dotenv
+from datetime import date, timedelta 
 
 # Cargar variables de entorno
 load_dotenv()
@@ -28,6 +29,7 @@ def crear_tablas():
         telegram_id TEXT NOT NULL,
         nombre TEXT NOT NULL,
         cantidad INTEGER NOT NULL,
+        vencimiento DATE,
         FOREIGN KEY (telegram_id) REFERENCES usuarios(telegram_id)
     );
     """
@@ -96,16 +98,19 @@ def eliminar_usuario(telegram_id):
 
 
 # ---------- CRUD PRODUCTOS ----------
-def agregar_producto(telegram_id, nombre, cantidad):
+def agregar_producto(telegram_id, nombre, cantidad, vencimiento=None):
     telegram_id = str(telegram_id).strip()  # Consistencia
     nombre = nombre.strip()  # Limpiar espacios
-    cursor.execute(
-        """
-    INSERT INTO productos (telegram_id, nombre, cantidad)
-    VALUES (?, ?, ?);
-    """,
-        (telegram_id, nombre, cantidad),
-    )
+    if vencimiento:
+        cursor.execute(
+            "INSERT INTO productos (telegram_id, nombre, cantidad, vencimiento) VALUES (%s, %s, %s, %s)",
+            (telegram_id, nombre, cantidad, vencimiento)
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO productos (telegram_id, nombre, cantidad) VALUES (%s, %s, %s)",
+            (telegram_id, nombre, cantidad)
+        )
     conn.commit()
 
 
@@ -172,6 +177,19 @@ def eliminar_producto(telegram_id, nombre):
     )
     conn.commit()
     
+
+def obtener_productos_por_vencer(telegram_id):
+    hoy = date.today()
+    limite = hoy + timedelta(days=5)
+    cursor.execute("""
+        SELECT nombre, cantidad, vencimiento
+        FROM productos
+        WHERE telegram_id = %s AND vencimiento IS NOT NULL AND vencimiento BETWEEN %s AND %s
+        ORDER BY vencimiento ASC
+    """, (telegram_id, hoy, limite))
+    return cursor.fetchall()
+
+
 def vaciar_heladera(telegram_id):
     telegram_id = str(telegram_id).strip()
 
@@ -206,6 +224,23 @@ def actualizar_producto_cantidad(telegram_id, nombre_actual, nueva_cantidad):
         (nueva_cantidad, telegram_id, nombre_actual),
     )
     conn.commit()
+
+
+def obtener_productos_bajo_stock(telegram_id, umbral=2):
+    telegram_id = str(telegram_id).strip()
+    try:
+        cursor.execute(
+            """
+            SELECT nombre, cantidad FROM productos
+            WHERE telegram_id = ? AND cantidad <= ?
+            """,
+            (telegram_id, umbral)
+        )
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"[ERROR] obtener_productos_bajo_stock: {e}")
+        return []
+
 
 def producto_existe(telegram_id, nombre):
     telegram_id = str(telegram_id).strip()
