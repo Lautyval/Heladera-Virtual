@@ -103,12 +103,12 @@ def agregar_producto(telegram_id, nombre, cantidad, vencimiento=None):
     nombre = nombre.strip()  # Limpiar espacios
     if vencimiento:
         cursor.execute(
-            "INSERT INTO productos (telegram_id, nombre, cantidad, vencimiento) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO productos (telegram_id, nombre, cantidad, vencimiento) VALUES (?, ?, ?, ?)",
             (telegram_id, nombre, cantidad, vencimiento)
         )
     else:
         cursor.execute(
-            "INSERT INTO productos (telegram_id, nombre, cantidad) VALUES (%s, %s, %s)",
+            "INSERT INTO productos (telegram_id, nombre, cantidad) VALUES (?, ?, ?)",
             (telegram_id, nombre, cantidad)
         )
     conn.commit()
@@ -184,7 +184,7 @@ def obtener_productos_por_vencer(telegram_id):
     cursor.execute("""
         SELECT nombre, cantidad, vencimiento
         FROM productos
-        WHERE telegram_id = %s AND vencimiento IS NOT NULL AND vencimiento BETWEEN %s AND %s
+        WHERE telegram_id = ? AND vencimiento IS NOT NULL AND vencimiento BETWEEN ? AND ?
         ORDER BY vencimiento ASC
     """, (telegram_id, hoy, limite))
     return cursor.fetchall()
@@ -240,6 +240,15 @@ def obtener_productos_bajo_stock(telegram_id, umbral=2):
     except Exception as e:
         print(f"[ERROR] obtener_productos_bajo_stock: {e}")
         return []
+
+def obtener_lista_compras(telegram_id):
+    cursor.execute("""
+        SELECT nombre FROM productos
+        WHERE cantidad = 0 AND usuario_id = (
+            SELECT id FROM usuarios WHERE telegram_id = ?
+        )
+    """, (telegram_id,))
+    return [fila[0] for fila in cursor.fetchall()]
 
 
 def producto_existe(telegram_id, nombre):
