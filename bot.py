@@ -13,6 +13,7 @@ from comandos.eliminar import eliminar
 from comandos.productos_por_vencer import productos_por_vencer
 from comandos.vaciar_heladera import vaciar
 from comandos.bajo_stock import bajo_stock
+from comandos.ver_lista_compras import ver_lista_compras
 
 
 load_dotenv()
@@ -32,6 +33,8 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("productos_por_vencer", productos_por_vencer))
     app.add_handler(CommandHandler("vaciar_heladera", vaciar))
     app.add_handler(CommandHandler("bajo_stock", bajo_stock))
+    app.add_handler(CommandHandler("ver_lista_compras", ver_lista_compras))
+
 
     print("✅ Bot funcionando...")
     app.run_polling()
