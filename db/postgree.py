@@ -242,13 +242,13 @@ def obtener_productos_bajo_stock(telegram_id, umbral=2):
         return []
 
 def obtener_lista_compras(telegram_id):
+    telegram_id = str(telegram_id).strip()
     cursor.execute("""
         SELECT nombre FROM productos
-        WHERE cantidad = 0 AND usuario_id = (
-            SELECT id FROM usuarios WHERE telegram_id = ?
-        )
+        WHERE cantidad = 0 AND telegram_id = ?
     """, (telegram_id,))
     return [fila[0] for fila in cursor.fetchall()]
+
 
 
 def producto_existe(telegram_id, nombre):
